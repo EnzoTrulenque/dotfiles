@@ -1,0 +1,5 @@
+require("novim.core.autocmds")
+require("novim.core.functions")
+require("novim.core.keymaps")
+require("novim.core.options")
+require("novim.core.diagnostics")
