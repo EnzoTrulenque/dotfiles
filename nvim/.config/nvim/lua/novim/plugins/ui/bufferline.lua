@@ -14,7 +14,7 @@ return {
         right_mouse_command = function(buf_id)
           require("mini.bufremove").delete(buf_id, false)
         end,
-        diagnostics = true,           -- OR: | "nvim_lsp" 
+        diagnostics = true, -- OR: | "nvim_lsp"
         diagnostics_update_in_insert = true,
         show_tab_indicators = false,
         show_close_icon = true,

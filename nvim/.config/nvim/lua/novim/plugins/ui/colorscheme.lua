@@ -11,34 +11,20 @@ return {
           terminal_colors = true,
           dim_inactive = {
             enabled = false,
-            shade = "dark",
-            percentage = 0.15,
           },
           styles = {
             comments = "italic",
             keywords = "bold",
-            functions = "NONE",
-            variables = "NONE",
-          },
-          inverse = {
-            match_paren = false,
-            visual = false,
-            search = false,
-          },
-          modules = {
-            cmp = true,
-            gitsigns = true,
-            nvimtree = true,
-            telescope = true,
-            lualine = true,
-            treesitter = true,
-            notify = true,
-            mini = true,
           },
         },
-        palettes = {},
-        specs = {},
-        groups = {},
+        groups = {
+          all = {
+            NormalNC = { bg = "NONE" },
+            NvimTreeNormal = { bg = "NONE" },
+            NvimTreeNormalNC = { bg = "NONE" },
+            WinSeparator = { fg = "#3e4452", bg = "NONE" }, -- Deixa a linha de split transparente
+          }
+        },
       })
 
       vim.cmd("colorscheme nightfox")

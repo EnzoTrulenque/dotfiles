@@ -7,7 +7,6 @@ return {
       bigfile      = { enabled = true },
       cursor       = { enabled = true },
       dashboard    = { enabled = false },
-      explorer     = { enabled = true },
       iguide       = { enabled = true },
       indent       = { enabled = false },
       input        = { enabled = false },

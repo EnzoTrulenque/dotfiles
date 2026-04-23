@@ -1,47 +1,36 @@
 return {
   "gbprod/yanky.nvim",
   version = "*",
-  event = { "BufReadPre", "BufNewFile" },
+  -- Carrega quando o Yank for invocado ou ao ler um arquivo
+  event = { "BufReadPost", "BufNewFile" },
+  dependencies = { "nvim-telescope/telescope.nvim" },
   keys = {
-    -- Abre o histórico no Telescope
-    {
-      "<leader>fy", -- "find yank"
-      "<cmd>Telescope yanky_history<cr>",
-      desc = "Histórico de Yank (Yanky)",
-    },
-    -- Cicla pelo histórico para colar itens anteriores/posteriores
-    { "[p", "<Plug>(YankyCyclePrev)" },
-    { "]p", "<Plug>(YankyCycleNext)" },
+    -- P e p nativos agora são dominados pelo Yanky para preservar a posição
+    { "p",     "<Plug>(YankyPutAfter)",                mode = { "n", "x" },                   desc = "Colar depois do cursor" },
+    { "P",     "<Plug>(YankyPutBefore)",               mode = { "n", "x" },                   desc = "Colar antes do cursor" },
+    { "gp",    "<Plug>(YankyGPutAfter)",               mode = { "n", "x" },                   desc = "Colar depois da seleção" },
+    { "gP",    "<Plug>(YankyGPutBefore)",              mode = { "n", "x" },                   desc = "Colar antes da seleção" },
+    -- Ciclar pelo histórico (após dar 'p')
+    { "<c-p>", "<Plug>(YankyPreviousEntry)",           desc = "Colar anterior (Yanky)" },
+    { "<c-n>", "<Plug>(YankyNextEntry)",               desc = "Colar próximo (Yanky)" },
+    { "]p",    "<Plug>(YankyPutIndentAfterLinewise)",  desc = "Colar com indentação (abaixo)" },
+    { "[p",    "<Plug>(YankyPutIndentBeforeLinewise)", desc = "Colar com indentação (acima)" },
   },
-  
-  -- Sua excelente configuração de 'opts' permanece a mesma
-  opts = {
-    ring = {
-      history_length = 100,
-      storage = "shada",
-      sync_with_numbered_registers = true,
-      cancel_event = "update",
-      ignore_registers = { "_" },
-      update_register_on_cycle = false,
-    },
-    picker = {
-      telescope = {
-        use_default_mappings = true,
+  config = function()
+    require("telescope").load_extension("yank_history")
+
+    require("yanky").setup({
+      ring = { history_length = 100, storage = "shada", sync_with_numbered_registers = true },
+      system_clipboard = { sync_with_ring = true },
+      highlight = {
+        on_put = true,
+        -- Desligado porque o nosso core/autocmds.lua já faz isso de forma nativa e melhor
+        on_yank = false,
+        timer = 200,
       },
-    },
-    system_clipboard = {
-      sync_with_ring = true,
-    },
-    highlight = {
-      on_put = true,
-      on_yank = true,
-      timer = 150,
-    },
-    preserve_cursor_position = {
-      enabled = true,
-    },
-    textobj = {
-      enabled = true,
-    },
-  },
+      preserve_cursor_position = {
+        enabled = true,
+      },
+    })
+  end,
 }

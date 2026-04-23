@@ -209,7 +209,7 @@ return {
       },
       hijack_cursor = false,
       auto_reload_on_write = true,
-      disable_netrw = false,
+      disable_netrw = true,
       hijack_netrw = true,
       hijack_unnamed_buffer_when_opening = false,
       root_dirs = {},
@@ -249,10 +249,6 @@ return {
       hijack_directories = {
         enable = true,
         auto_open = true,
-      },
-      system_open = {
-        cmd = "",
-        args = {},
       },
       modified = {
         enable = false,

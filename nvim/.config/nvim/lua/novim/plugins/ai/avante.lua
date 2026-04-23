@@ -1,7 +1,6 @@
 return {
   "yetone/avante.nvim",
   event = "VeryLazy",
-  lazy = false,
   version = false,
   -- O build 'make' é essencial para compilar as bibliotecas no Linux
   build = "make",

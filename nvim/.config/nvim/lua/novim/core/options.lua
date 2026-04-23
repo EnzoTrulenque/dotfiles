@@ -1,78 +1,75 @@
-local options = {
+-- ==============================================================================
+-- lua/novim/core/options.lua
+-- Configurações Nativas do Editor
+-- ==============================================================================
 
-  -- GENERAL
-  timeoutlen = 10000,               -- time to wait for a mapped sequence to complete (in milliseconds)
-  updatetime = 200,               -- faster completion (4000ms default)
-  swapfile = false,               -- creates a swapfile
-  undofile = true,                -- enable persistent undo
-  writebackup = false,            -- if a file is being edited by another program, it is not allowed to be edited
-  lazyredraw = true,              -- Enhances the macros performance -- TRIAL
+local opt = vim.opt
 
-  -- APPEARANCE
-  fileencoding = "utf-8",         -- the encoding written to a file
-  guifont = "monospace:h17",      -- the font used in graphical neovim applications
-  background = "dark",            -- colorschemes that can be light or dark will be made dark
-  termguicolors = true,           -- set term gui colors (most terminals support this)
-  conceallevel = 0,               -- so that `` is visible in markdown files
-  number = true,                  -- set numbered lines
-  relativenumber = true,          -- set relative numbered lines
-  numberwidth = 2,                -- set number column width to 2 {default 4}
-  signcolumn = "yes",             -- always show the sign column, otherwise it would shift the text each time
-  statuscolumn = "%s%l %r",       -- Used in Snacks (EXPLAIN)
-  fillchars = "eob: ",            -- don't show tildes
-  cursorline = true,              -- highlight the current line
-  laststatus = 3,                 -- Global and unique status bar -- TRIAL
-  wrap = true,                    -- display lines as one long line
-  showbreak = "  ",               -- set indent of wrapped lines
-  cmdheight = 1,                  -- space in the neovim command line for displaying messages
-  pumheight = 7,                  -- pop up menu height
-  showmode = false,               -- we don't need to see things like -- INSERT -- anymore
-  splitbelow = true,              -- force all horizontal splits to go below current window
-  splitright = true,              -- force all vertical splits to go to the right of current window
-  scrolloff = 7,                  -- minimal number of screen lines to keep above and below the cursor
-  sidescrolloff = 7,              -- minimal number of screen columns either side of cursor if wrap is `false`
-  shortmess = "filnxtToOFc",      -- which errors to suppress
-  mousemoveevent = true,
+-- ==============================================================================
+-- 1. Geral e Desempenho
+-- ==============================================================================
+opt.timeoutlen = 300    -- Tempo (ms) aguardando completar um atalho (Ex: de 10000 para 300)
+opt.updatetime = 200    -- Tempo (ms) de inatividade para salvar o swap e acionar CursorHold (ótimo para LSP)
+opt.swapfile = false    -- Desativa arquivos de swap (.swp)
+opt.undofile = true     -- Mantém o histórico de 'undo' mesmo após fechar o arquivo
+opt.writebackup = false -- Previne edição concorrente por outros programas
+opt.lazyredraw = true   -- Não redesenha a tela no meio da execução de macros (Performance)
+opt.autoread = true     -- Recarrega o arquivo se foi alterado fora do Neovim
 
-  -- INDENT
-  tabstop = 2,                    -- insert 2 spaces for a tab
-  shiftwidth = 2,                 -- the number of spaces inserted for each indentation
-  softtabstop = 2,                -- insert 2 spaces for a tab
-  expandtab = true,               -- convert tabs to spaces
-  breakindent = true,             -- tab wrapped lines
-  linebreak = true,               -- companion to wrap, don't split words
-  backspace = "indent,eol,start", -- allow backspace on indent, end of line or insert mode start position
+-- ==============================================================================
+-- 2. Aparência e Interface
+-- ==============================================================================
+opt.fileencoding = "utf-8"    -- Codificação padrão de escrita
+opt.guifont = "monospace:h17" -- Fonte para GUIs do Neovim (ex: Neovide)
+opt.background = "dark"       -- Força o tema a usar variantes escuras
+opt.termguicolors = true      -- Habilita cores 24-bit RGB (Essencial para temas modernos)
+opt.conceallevel = 0          -- Permite ver caracteres de marcação (ex: `` em markdown)
+opt.cmdheight = 1             -- Altura da linha de comando inferior
+opt.pumheight = 7             -- Altura máxima do menu popup (autocompletar)
+opt.showmode = false          -- Oculta "-- INSERT --" nativo (o Lualine já mostra isso)
+opt.shortmess:append("c")     -- Suprime mensagens desnecessárias de conclusão (filnxtToOFc + c)
 
-  -- EDIT
-  spell = true,                   -- turns on spellchecker
-  spelllang = { 'pt', 'en'},      -- sets spelling dictionary
-  clipboard = "unnamedplus",      -- allows neovim to access the system clipboard
-  mouse = "a",                    -- allow the mouse to be used in neovim
-  mousescroll = "ver:2,hor:4",    -- change the speed of the scroll wheel
-  ignorecase = true,              -- ignore case in search patterns
-  smartcase = true,               -- smart case
-  virtualedit = "block",          -- vitualblock mode doesn't get stuck at the end of line
-  inccommand = "split",           -- shows all inline replacements in split
-  autoread = true,
+-- Colunas e Linhas
+opt.number = true             -- Mostra números absolutos das linhas
+opt.relativenumber = true     -- Mostra números relativos (excelente para pulos com 'j' e 'k')
+opt.numberwidth = 2           -- Largura mínima da coluna de números
+opt.signcolumn = "yes"        -- Sempre mostra a coluna de sinais (LSP/Git) para a tela não pular
+opt.statuscolumn = "%s%l %r"  -- Formato visual: [Sinais][LinhaAbsoluta] [LinhaRelativa]
+opt.fillchars = { eob = " " } -- Esconde os '~' no final do arquivo (End of Buffer)
+opt.cursorline = true         -- Destaca a linha atual do cursor
+opt.laststatus = 3            -- Statusline única e global para todos os splits
 
-}
+-- ==============================================================================
+-- 3. Comportamento de Tela e Splits
+-- ==============================================================================
+opt.wrap = true           -- Quebra visualmente linhas muito longas
+opt.showbreak = "  "      -- Recuo visual para linhas quebradas
+opt.linebreak = true      -- Quebra linhas inteiras em palavras (não corta a palavra no meio)
+opt.splitbelow = true     -- Novos splits horizontais abrem abaixo
+opt.splitright = true     -- Novos splits verticais abrem à direita
+opt.scrolloff = 7         -- Mantém 7 linhas de margem acima/abaixo do cursor ao rolar a tela
+opt.sidescrolloff = 7     -- Mantém 7 colunas de margem lateral ao rolar a tela
+opt.mousemoveevent = true -- Permite eventos de hover do mouse (útil para plugins)
 
--- turns on all values in options table above
-for k, v in pairs(options) do
-  vim.opt[k] = v
-end
+-- ==============================================================================
+-- 4. Indentação
+-- ==============================================================================
+opt.tabstop = 2                    -- Um TAB equivale a 2 espaços
+opt.shiftwidth = 2                 -- Tamanho do recuo automático (>>, <<)
+opt.softtabstop = 2                -- Espaços inseridos ao apertar TAB no modo inserção
+opt.expandtab = true               -- Converte TABS reais em espaços
+opt.breakindent = true             -- Linhas quebradas visualmente mantêm a indentação da linha original
+opt.backspace = "indent,eol,start" -- Comportamento moderno do backspace
 
--- CLIPBOARD -- (for yanky)
--- May help Arch/Debian Linux users
--- vim.g.clipboard = {
---   name = "xsel_override",
---   copy = {
---     ["+"] = "xsel --input --clipboard",
---     ["*"] = "xsel --input --primary",
---   },
---   paste = {
---     ["+"] = "xsel --output --clipboard",
---     ["*"] = "xsel --output --primary",
---   },
---   cache_enabled = 1,
--- }
+-- ==============================================================================
+-- 5. Edição, Busca e Área de Transferência
+-- ==============================================================================
+opt.spell = true                -- Habilita corretor ortográfico
+opt.spelllang = { "pt", "en" }  -- Dicionários utilizados
+opt.clipboard = "unnamedplus"   -- Sincroniza com a área de transferência do sistema operativo
+opt.mouse = "a"                 -- Habilita o mouse em todos os modos
+opt.mousescroll = "ver:2,hor:4" -- Sensibilidade do scroll do mouse
+opt.ignorecase = true           -- Ignora maiúsculas/minúsculas ao buscar (ex: /teste acha TESTE)
+opt.smartcase = true            -- O ignora maiúsculas falha se você digitar uma Maiúscula na busca
+opt.virtualedit = "block"       -- Permite que o cursor vá além do fim da linha no modo visual block
+opt.inccommand = "split"        -- Mostra o preview de substituições (%s/a/b) em um split ao vivo
