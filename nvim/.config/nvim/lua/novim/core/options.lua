@@ -8,12 +8,11 @@ local opt = vim.opt
 -- ==============================================================================
 -- 1. Geral e Desempenho
 -- ==============================================================================
-opt.timeoutlen = 300    -- Tempo (ms) aguardando completar um atalho (Ex: de 10000 para 300)
+opt.timeoutlen = 1000   -- Tempo (ms) aguardando completar um atalho (Ex: de 10000 para 300)
 opt.updatetime = 200    -- Tempo (ms) de inatividade para salvar o swap e acionar CursorHold (ótimo para LSP)
 opt.swapfile = false    -- Desativa arquivos de swap (.swp)
 opt.undofile = true     -- Mantém o histórico de 'undo' mesmo após fechar o arquivo
 opt.writebackup = false -- Previne edição concorrente por outros programas
-opt.lazyredraw = true   -- Não redesenha a tela no meio da execução de macros (Performance)
 opt.autoread = true     -- Recarrega o arquivo se foi alterado fora do Neovim
 
 -- ==============================================================================
@@ -23,7 +22,7 @@ opt.fileencoding = "utf-8"    -- Codificação padrão de escrita
 opt.guifont = "monospace:h17" -- Fonte para GUIs do Neovim (ex: Neovide)
 opt.background = "dark"       -- Força o tema a usar variantes escuras
 opt.termguicolors = true      -- Habilita cores 24-bit RGB (Essencial para temas modernos)
-opt.conceallevel = 0          -- Permite ver caracteres de marcação (ex: `` em markdown)
+opt.conceallevel = 1          -- Oculta caracteres de marcação (ex: `` em markdown)
 opt.cmdheight = 1             -- Altura da linha de comando inferior
 opt.pumheight = 7             -- Altura máxima do menu popup (autocompletar)
 opt.showmode = false          -- Oculta "-- INSERT --" nativo (o Lualine já mostra isso)
@@ -60,6 +59,8 @@ opt.softtabstop = 2                -- Espaços inseridos ao apertar TAB no modo 
 opt.expandtab = true               -- Converte TABS reais em espaços
 opt.breakindent = true             -- Linhas quebradas visualmente mantêm a indentação da linha original
 opt.backspace = "indent,eol,start" -- Comportamento moderno do backspace
+opt.autoindent = true              -- Copia a indentação da linha anterior
+opt.smartindent = true             -- Indentação inteligente para novos blocos
 
 -- ==============================================================================
 -- 5. Edição, Busca e Área de Transferência

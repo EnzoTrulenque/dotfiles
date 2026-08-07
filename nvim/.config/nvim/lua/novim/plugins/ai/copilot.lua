@@ -1,20 +1,10 @@
 return {
   "zbirenbaum/copilot.lua",
-  event = "InsertEnter", -- Carrega apenas quando você começa a digitar
+  event = "InsertEnter",
   config = function()
     require("copilot").setup({
-      suggestion = {
-        enabled = true,
-        auto_trigger = false, -- Começa DESATIVADO
-        keymap = {
-          -- Aceita a sugestão com Ctrl+L (não rouba o seu Tab de indentação)
-          accept = "<C-l>",
-          accept_word = false,
-          accept_line = false,
-          next = "<M-]>",
-          prev = "<M-[>",
-        }
-      },
+      -- Desliga as sugestões nativas. O copilot-cmp fará todo o trabalho no menu.
+      suggestion = { enabled = false },
       panel = { enabled = false },
     })
   end,

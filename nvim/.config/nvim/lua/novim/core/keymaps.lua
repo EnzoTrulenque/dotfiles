@@ -21,6 +21,7 @@ local custom_functions = require("novim.core.functions")
 map("n", "<C-z>", "<nop>", opts("Desabilitar suspensão (C-z)"))
 map("n", "gc", "<nop>", opts(""))
 map("n", "gcc", "<nop>", opts(""))
+map("i", "<C-n>", "<nop>", opts(""))
 
 -- Utilidades
 map("n", "<C-t>", "<cmd>Floaterminal<CR>", opts("Terminal Flutuante"))
@@ -30,9 +31,17 @@ map("n", "<C-p>", "<cmd>Telescope find_files<CR>", opts("Buscar arquivos (Telesc
 map("n", "<S-m>", ':execute "help " . expand("<cword>")<cr>', opts("Help na palavra sob o cursor"))
 map("n", "<C-;>", custom_functions.add_semicolon_at_end, opts("Adicionar ';' no fim da linha"))
 
+-- <C-p>: Mostra a assinatura da função (Parâmetros) usando o LSP
+map("i", "<C-p>", function() vim.lsp.buf.signature_help() end, opts("LSP: Mostrar parâmetros da função"))
+
+-- Navegação na linha de comandos
+
+map("c", "<C-j>", "<Down>", opts("Próximo comando no histórico"))
+map("c", "<C-k>", "<Up>", opts("Comando anterior no histórico"))
+
 -- Comentários
 map('n', "<C-/>", '<Plug>(comment_toggle_linewise_current)', opts("Alternar comentário (Linha)"))
-map('x', "<C-/>", '<Plug>(comment_toggle_linewise_visual)', opts("Alternar comentário (Visual)"))
+map('x', "<C-/>", '<Plug>(comment_toggle_blockwise_visual)', opts("Alternar comentário (Bloco Visual)"))
 
 -- Movimentação e Edição (Overrides)
 map({ "n", "v" }, "Y", "y$", opts("Yank até o fim da linha"))
@@ -54,11 +63,11 @@ map("n", "<A-Right>", ":vertical resize +2<CR>", opts("Aumentar largura da janel
 map("n", "<A-h>", ":vertical resize -2<CR>", opts("Diminuir largura da janela"))
 map("n", "<A-l>", ":vertical resize +2<CR>", opts("Aumentar largura da janela"))
 
--- Navegação de Buffers
-map("n", "<TAB>", ":bnext<CR>", opts("Próximo Buffer"))
-map("n", "<S-TAB>", ":bprevious<CR>", opts("Buffer Anterior"))
-map("n", "<BS>", ":BufferLineMoveNext<CR>", opts("Mover aba para direita"))
-map("n", "<S-BS>", ":BufferLineMovePrev<CR>", opts("Mover aba para esquerda"))
+-- Navegação de Buffers (Respeitando a ordem visual do Bufferline)
+map("n", "<TAB>", ":BufferLineCycleNext<CR>", opts("Próximo Buffer"))
+map("n", "<S-TAB>", ":BufferLineCyclePrev<CR>", opts("Buffer Anterior"))
+map("n", "<BS>", ":BufferLineMovePrev<CR>", opts("Mover aba para esquerda"))
+map("n", "<S-BS>", ":BufferLineMoveNext<CR>", opts("Mover aba para direita"))
 
 -- Mover Linhas
 map("n", "<A-j>", custom_functions.move_line_down, opts("Mover linha atual para baixo"))
@@ -67,10 +76,6 @@ map("x", "<A-j>", ":move '>+1<CR>gv-gv", opts("Mover bloco para baixo"))
 map("x", "<A-k>", ":move '<-2<CR>gv-gv", opts("Mover bloco para cima"))
 map("v", "<A-j>", ":m'>+<CR>gv", opts("Mover seleção para baixo"))
 map("v", "<A-k>", ":m-2<CR>gv", opts("Mover seleção para cima"))
-
--- Movimentação Vertical Rápida
-map("n", "<C-u>", "<C-u>zz", opts("Pular meia página para cima (Centralizado)"))
-map("n", "<C-d>", "<C-d>zz", opts("Pular meia página para baixo (Centralizado)"))
 
 -- Movimentação Horizontal Extrema
 map({ "n", "v" }, "<S-h>", "g^", opts("Início da linha visual"))
@@ -99,7 +104,7 @@ function M.load_which_key_mappings()
 
   wk.add({
     -- Atalhos de Nível Superior
-    { "<leader>d", "<cmd>update! | bdelete!<CR>", desc = "Delete buffer", icon = "" },
+    { "<leader>d", "<cmd>update! | lua require('mini.bufremove').delete(0, false)<CR>", desc = "Delete buffer", icon = "" },
     { "<leader>e", "<cmd>NvimTreeToggle<CR>", desc = "Explorer", icon = "󰥩" },
     { "<leader>h", "<cmd>Alpha<CR>", desc = "Home", icon = "" },
     { "<leader>i", "<cmd>VimtexTocOpen<CR>", desc = "Index" },
@@ -107,6 +112,7 @@ function M.load_which_key_mappings()
     { "<leader>u", "<cmd>Telescope undo<CR>", desc = "Undo history", icon = "" },
     { "<leader>v", "<cmd>VimtexView<CR>", desc = "View" },
     { "<leader>w", "<cmd>w!<CR>", desc = "Write", icon = "" },
+    { "<leader>Y", "<cmd>%y<CR>", desc = "Yank all", icon = "" },
     { "<leader>z", "<cmd>ZenMode<CR>", desc = "Zen", icon = "󱅻" },
 
     -- Ai
@@ -199,6 +205,14 @@ function M.load_which_key_mappings()
     { "<leader>rp", function() vim.diagnostic.jump({ count = -1, float = true }) end, desc = "prev" },
     { "<leader>ru", "<cmd>w! | TermExec cmd='uv run %:p:r.py'<CR>", desc = "uv", icon = "󱟾" },
 
+    -- Replace
+    { "<leader>R", group = "Replace", icon = "󰛔", mode = { "n", "v" } },
+    { "<leader>Rw", ":%s/\\<<C-r><C-w>\\>//g<Left><Left>", desc = "word (file)", mode = "n" },
+    { "<leader>Rc", ":%s/\\<<C-r><C-w>\\>//gc<Left><Left><Left>", desc = "word confirm", mode = "n" },
+    { "<leader>Rl", ":s/\\<<C-r><C-w>\\>//g<Left><Left>", desc = "word (line)", mode = "n" },
+    -- Mapeamento visual: copia a seleção para o registro 'h' e joga na linha de comando
+    { "<leader>R", '"hy:%s/<C-r>h//g<Left><Left>', desc = "visual selection", mode = "v" },
+
     -- Split
     { "<leader>s", group = "Split", icon = "" },
     { "<leader>sv", "<cmd>vert sb<CR>", desc = "create vertical split", icon = "" },
@@ -243,6 +257,11 @@ function M.load_which_key_mappings()
     { "<leader>xu", "<cmd>cd %:p:h<CR>", desc = "update cwd" },
     { "<leader>xv", "<plug>(vimtex-context-menu)", desc = "vimtex menu" },
     { "<leader>xw", "<cmd>VimtexCountWords!<CR>", desc = "word count" },
+
+    { "<leader>y", group = "Yazi", icon = "󰇥" },
+    { "<leader>yh", "<cmd>Yazi<cr>", desc = "open this buffer's dir", icon = "󰈔" },
+    { "<leader>yc", "<cmd>Yazi cwd<cr>", desc = "open cwd", icon = "" },
+    { "<leader>yr", "<cmd>Yazi toggle<cr>", desc = "last session", icon = "󰒮" },
   })
 end
 

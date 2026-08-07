@@ -5,18 +5,17 @@ return {
     "hrsh7th/cmp-buffer",
     "hrsh7th/cmp-path",
 
-    -- 1. O MOTOR DO ULTISNIPS (Restaurado e configurado para não roubar atalhos)
+    -- 1. O MOTOR DO ULTISNIPS (De volta às raízes)
     {
       "SirVer/ultisnips",
       dependencies = { "honza/vim-snippets" },
       init = function()
-        -- Atribui atalhos "fictícios" para que o plugin não roube o <Tab> nativo do Neovim
         vim.g.UltiSnipsExpandTrigger = "<Plug>(ultisnips_expand)"
-        vim.g.UltiSnipsJumpForwardTrigger = "<Plug>(ultisnips_jump_forward)"
-        vim.g.UltiSnipsJumpBackwardTrigger = "<Plug>(ultisnips_jump_backward)"
+        vim.g.UltiSnipsJumpForwardTrigger = "<C-l>"
+        vim.g.UltiSnipsJumpBackwardTrigger = "<C-h>"
       end
     },
-    "quangnguyen30192/cmp-nvim-ultisnips", -- A ponte de integração
+    "quangnguyen30192/cmp-nvim-ultisnips",
 
     "zbirenbaum/copilot-cmp",
     "onsails/lspkind.nvim",
@@ -29,9 +28,6 @@ return {
     local cmp = require("cmp")
     local lspkind = require("lspkind")
     local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-
-    -- 2. Importamos as funções seguras do UltiSnips direto para o Lua
-    local cmp_ultisnips_mappings = require("cmp_nvim_ultisnips.mappings")
 
     cmp.event:on(
       'confirm_done',
@@ -51,40 +47,32 @@ return {
         end,
       },
       mapping = {
-        -- Enter: Só autocompleta SE você tiver selecionado uma opção ativamente.
-        -- Caso contrário (mesmo com o menu aberto), ele apenas quebra a linha.
-        ["<CR>"] = cmp.mapping({
-          i = function(fallback)
-            if cmp.visible() and cmp.get_active_entry() then
-              cmp.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false })
-            else
-              fallback()
-            end
-          end,
-        }),
+        ["<CR>"] = cmp.mapping(function(fallback)
+          if cmp.visible() and cmp.get_selected_entry() then
+            cmp.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false })
+          else
+            vim.api.nvim_feedkeys(
+              vim.api.nvim_replace_termcodes("<CR>", true, true, true), "n", true)
+          end
+        end, { "i", "s" }),
 
-        -- Navegação: <C-n>/<C-p> ou as setas do teclado para mover E selecionar.
-        ['<C-n>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
-        ['<C-p>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
+        -- Navegação pelas setas ou C-j / C-k
+        ['<C-j>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
+        ['<C-k>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
         ['<Down>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
         ['<Up>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
 
-        -- Rolagem da janela de documentação adjacente
         ["<C-b>"] = cmp.mapping.scroll_docs(-4),
         ["<C-f>"] = cmp.mapping.scroll_docs(4),
-
-        -- Fecha o menu de autocomplete rapidamente
         ["<C-e>"] = cmp.mapping.abort(),
-
-        -- Tab Blindado: Única e exclusivamente para pular em snippets ou dar indentação.
         ["<Tab>"] = cmp.mapping(function(fallback)
-          -- A função nativa do cmp_ultisnips já lida com o fallback (inserir um tab real)
-          -- caso não haja nenhum snippet para expandir ou pular.
-          cmp_ultisnips_mappings.expand_or_jump_forwards(fallback)
-        end, { "i", "s" }),
-
-        ["<S-Tab>"] = cmp.mapping(function(fallback)
-          cmp_ultisnips_mappings.jump_backwards(fallback)
+          if vim.fn["UltiSnips#CanExpandSnippet"]() == 1 then
+            vim.api.nvim_feedkeys(
+              vim.api.nvim_replace_termcodes("<C-R>=UltiSnips#ExpandSnippet()<CR>", true, true, true), "m", true)
+          else
+            vim.api.nvim_feedkeys(
+              vim.api.nvim_replace_termcodes("<Tab>", true, true, true), "n", true)
+          end
         end, { "i", "s" }),
       },
       formatting = {
@@ -138,15 +126,20 @@ return {
       },
     })
 
-    -- Busca (/)
     cmp.setup.cmdline('/', {
       mapping = cmp.mapping.preset.cmdline(),
       sources = { { name = 'buffer' } }
     })
 
-    -- Comandos (:)
+    -- Capturamos o preset do cmdline para manter o Tab e o Enter funcionando
+    local cmdline_mapping = cmp.mapping.preset.cmdline()
+
+    -- Injetamos a navegação com C-j e C-k no contexto de comando (c)
+    cmdline_mapping['<C-j>'] = { c = cmp.mapping.select_next_item() }
+    cmdline_mapping['<C-k>'] = { c = cmp.mapping.select_prev_item() }
+
     cmp.setup.cmdline(':', {
-      mapping = cmp.mapping.preset.cmdline(),
+      mapping = cmdline_mapping,
       sources = { { name = 'path' }, { name = 'cmdline' } }
     })
   end,

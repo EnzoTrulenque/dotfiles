@@ -2,80 +2,42 @@ return {
   "nvim-treesitter/nvim-treesitter",
   event = { "BufReadPre", "BufNewFile" },
   build = ":TSUpdate",
+  branch = "main",
   dependencies = {
-    "nvim-treesitter/nvim-treesitter-textobjects",
+    -- IMPORTANTE: A dependência do textobjects obrigatoriamente deve seguir a branch main também
+    { "nvim-treesitter/nvim-treesitter-textobjects", branch = "main" },
     "JoosepAlviste/nvim-ts-context-commentstring",
     "windwp/nvim-ts-autotag",
   },
   config = function()
-    require("nvim-treesitter.configs").setup({
-      -- enable syntax highlighting
-      highlight = {
-        enable = true,
-        disable = { "css", "latex", "markdown", "cls" }, -- list of language that will be disabled
-        -- additional_vim_regex_highlighting = { 'org' }, -- for orgmode
-      },
-      -- enable indentation
-      indent = { enable = true },
-      -- ensure these language parsers are installed
-      ensure_installed = {
-        "json",
-        "yaml",
-        "html",
-        "bash",
-        "lua",
-        "vim",
-        "gitignore",
-        "query",
-        "python",
-        "c",
-        "cpp",
-        "haskell",
-        "gitignore",
-        "bibtex",
-        "vimdoc",
-        -- "latex",
-        -- "javascript",
-        -- "typescript",
-        -- "tsx",
-        -- "css",
-        -- "prisma",
-        -- "markdown",
-        -- "markdown_inline",
-        -- "svelte",
-        -- "graphql",
-        -- "dockerfile",
-        -- "perl",
-      },
-      auto_install = true,
-      -- indent = { enable = false, disable = { "latex", "python", "css" } },
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = "<C-n>",
-          node_incremental = "<C-n>",
-          scope_incremental = false,
-          node_decremental = "<C-p>",
-        },
-      },
+    -- 1. Instalação das árvores sintáticas (Substitui o bloco 'ensure_installed')
+    local parsers = {
+      "json", "yaml", "html", "bash", "lua", "vim", "gitignore",
+      "query", "python", "c", "cpp", "haskell", "bibtex", "vimdoc",
+      "latex", "markdown", "markdown_inline"
+    }
 
-      textobjects = {
-        select = {
-          enable = true,
-          lookahead = true,
-          keymaps = {
-            ["af"] = "@function.outer",
-            ["if"] = "@function.inner",
-            ["ac"] = "@class.outer",
-            ["ic"] = "@class.inner",
-            ["aa"] = "@parameter.outer",
-            ["ia"] = "@parameter.inner",
-          },
-        },
-      },
+    -- Tenta instalar os parsers assincronamente ao carregar
+    pcall(function()
+      require("nvim-treesitter").install(parsers)
+    end)
+
+    -- 2. Ativação do Highlight e Indentação Nativa do Neovim
+    -- Substitui os antigos blocos highlight = { enable = true } e indent = { enable = true }
+    vim.api.nvim_create_autocmd("FileType", {
+      callback = function(args)
+        -- Ativa o syntax highlight no buffer atual usando a API interna do editor
+        pcall(vim.treesitter.start, args.buf)
+
+        -- Ativa a indentação baseada na árvore de sintaxe atual do buffer
+        vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      end,
     })
 
-    -- enable nvim-ts-context-commentstring plugin for commenting tsx and jsx
+    -- 3. Configuração de plugins externos
     require("ts_context_commentstring").setup({})
+
+    -- NOTA: O módulo de textobjects agora gerencia a própria configuração independentemente.
+    -- O módulo nativo de 'incremental_selection' foi removido e não deve ser declarado aqui.
   end,
 }

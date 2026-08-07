@@ -77,7 +77,7 @@ api.nvim_create_autocmd("TermOpen", {
 -- Mapeamentos para Markdown (Autolist)
 api.nvim_create_autocmd("FileType", {
   group = augroup,
-  pattern = { "markdown" }, -- CORREÇÃO AQUI: "markdown" em vez de "*.md"
+  pattern = { "markdown" },
   desc = "Atalhos e formatação para arquivos Markdown",
   callback = function(event)
     local opts = { buffer = event.buf, noremap = true, silent = true }
